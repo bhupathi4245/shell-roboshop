@@ -7,7 +7,7 @@ ZONE_ID="Z04557222TXQH5DOJA863" # replace with your ZONE ID
 DOMAIN_NAME="akinfotech.site" # replace with your domain
 
 #for instance in ${INSTANCES[@]}
-for instance in $@
+for instance in $@      # arguments will be passed from the shell command line.
 do
     INSTANCE_ID=$(aws ec2 run-instances --image-id ami-09c813fb71547fc4f --instance-type t3.micro --security-group-ids sg-0e0a69487712e0333 --tag-specifications "ResourceType=instance,Tags=[{Key=Name, Value=$instance}]" --query "Instances[0].InstanceId" --output text)
     if [ $instance != "frontend" ]
