@@ -9,6 +9,7 @@ N="\e[0m"
 LOGS_FOLDER="/var/log/roboshop-logs"	# to set log folder for the application log to capture the logs from the execution
 SCRIPT_NAME=$(echo $0 |cut -d "." -f1)	#
 LOG_FILE="$LOGS_FOLDER/$SCRIPT_NAME.log"
+SCRIPT_DIR=$PWD
 
 mkdir -p $LOGS_FOLDER
 echo "Script started executing at:$(date)" | tee -a $LOG_FILE
@@ -33,25 +34,47 @@ else
 fi
 }
 
-dnf module disable redis -y &>>$LOG_FILE
-VALIDATE $? "Disabling default Redis"
+dnf module disable nodejs -y &>>LOG_FILE
+VALIDATE $1 "Disabling default nodejs ... "
 
-dnf module enable redis:7 -y &>>$LOG_FILE
-VALIDATE $? "Enabling Redis:7 as default"
+dnf module enable nodejs:20 -y &>>LOG_FILE
+VALIDATE $1 "Enabling nodejs:20 ... "
 
-dnf install redis -y &>>$LOG_FILE
-VALIDATE $? "Installing Redis"
+dnf install nodejs -y &>>LOG_FILE
+VALIDATE $1 "Installing jodejs:20 ... "
 
-sed -i -e 's/127.0.0.1/0.0.0.0/g' -e '/protected-mode/ c protected-mode no' /etc/redis/redis.conf
-VALIDATE $? "Edited redis.conf to accept remote connections"
+id roboshop
+if [$? -ne 0]
+then
+	useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>LOG_FILE
+	VALIDATE $1 "Creating system user"
+else
+	echo "System user roboshop already created... $Y SKIPPING $N" 
+fi
 
-systemctl enable redis
-VALIDATE $? "Enabling Redis service"
+mkdir -p /app
+VALIDATE $? "Creating app directory"
 
-systemctl start redis
-VALIDATE $? "Starting Redis service"
+curl -L -o /tmp/cart.zip https://roboshop-artifacts.s3.amazonaws.com/cart-v3.zip &>>$LOG_FILE
+VALIDATE $? "Downloading cart zip"
 
-END_TIME=$(dat +%s)
-TOTAL_TIME=$(( $END_TIME - $START_TIME)) # Time taken to execute in seconds
+rm -rf /app/*
+cd /app 
+unzip /tmp/cart.zip
+VALIDATE $? "Unzipping cart"
+
+npm install &>>$LOG_FILE
+VALIDATE $? "Installing dependencies ... "
+
+cp $SCRIPT_DIR/cart.service /etc/systemd/system/cart.service
+VALIDATE $? "copying cart services ... "
+
+systemctl daemon-reload &>>$LOG_FILE
+systemctl enable cart &>>$LOG_FILE
+systemctl start cart &>>$LOG_FILE
+VALIDATE $? "Starting cart services ... "
+
+END_TIME=$(date +%s)
+TOTAL_TIME=$(( $END_TIME - $START_TIME ))
 
 echo -e "Script exection completed successfully, $Y time taken: $TOTAL_TIME seconds $N" | tee -a $LOG_FILE
