@@ -47,7 +47,7 @@ id roboshop
 if [$? -ne 0]	# idempotent
 then
 	useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$$LOG_FILE
-	VALIDATE $1 "Creating system user roboshop ... "
+	VALIDATE $? "creating system user roboshop ... "
 else
 	echo -e "System user roboshop already created ... $Y SKIPPING $N"
 fi
@@ -61,18 +61,18 @@ VALIDATE $? "Downloading user artifact ... "
 rm -rf /app/*
 cd /app
 unzip /tmp/user.zip &>>$$LOG_FILE
-VALIDATE $1 "unzipping user ... "
+VALIDATE $? "unzipping user ... "
 
 npm install &>>$$LOG_FILE
-VALIDATE $1 "Installing npm ... "
+VALIDATE $? "Installing npm ... "
 
 cp $SCRIPT_DIR/user.service /etc/systemd/system/user.service
-VALIDATE $1 "copying user service ... "
+VALIDATE $? "copying user service ... "
 
 systemctl daemon-reload  &>>$LOG_FILE
 systemctl enable user  &>>$LOG_FILE
 systemctl start user
-VALIDATE $1 "Starting user services ... "
+VALIDATE $? "Starting user services ... "
 
 END_TIME=$(date +%s)
 TOTAL_TIME=$(( $END_TIME - $START_TIME ))

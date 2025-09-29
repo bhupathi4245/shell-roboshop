@@ -35,19 +35,19 @@ fi
 }
 
 dnf module disable nodejs -y &>>LOG_FILE
-VALIDATE $1 "Disabling default nodejs ... "
+VALIDATE $? "Disabling default nodejs ... "
 
 dnf module enable nodejs:20 -y &>>LOG_FILE
-VALIDATE $1 "Enabling nodejs:20 ... "
+VALIDATE $? "Enabling nodejs:20 ... "
 
 dnf install nodejs -y &>>LOG_FILE
-VALIDATE $1 "Installing jodejs:20 ... "
+VALIDATE $? "Installing jodejs:20 ... "
 
 id roboshop
 if [$? -ne 0]
 then
 	useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>LOG_FILE
-	VALIDATE $1 "Creating system user"
+	VALIDATE $? "creating system user"
 else
 	echo "System user roboshop already created... $Y SKIPPING $N" 
 fi
