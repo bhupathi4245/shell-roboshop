@@ -50,4 +50,51 @@ else
 fi
 
 mkdir -p /app
-VALIDATE $? "app directory creation "
+VALIDATE $? "creating app directory"
+
+curl -L -o /tmp/shipping.zip https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip &>>$LOG_FILE
+VALIDATE $? "downloading shipping"
+
+rm -rf /app/*
+cd /app 
+unzip /tmp/shipping.zip
+VALIDATE $? "unzippping shipping"
+
+mvn clean package &>>$LOG_FILE
+VALIDATE $? "packaging the shipping application"
+
+mv target/shipping-1.0.jar shipping.jar &>>$LOG_FILE
+VALIDATE $? "moving and renaming the jar file"
+
+cp $SCRIPT_DIR/shipping.services /etc/systemd/system/shipping.service
+
+systemctl deamon-reload &>>$LOG_FILE
+VALIDATE $? "deamon reload"
+
+systemctl enable shipping &>>$LOG_FILE
+VALIDATE $? "enabling shipping services"
+
+systemctl start shipping &>>$LOG_FILE
+VALIDATE $? "starting shipping services"
+
+dnf install mysql -y  &>>$LOG_FILE
+VALIDATE $? "Install MySQL"
+
+mysql -h mysql.daws84s.site -u root -p$MYSQL_ROOT_PASSWORD -e 'use cities' &>>$LOG_FILE
+if [ $? -ne 0 ]
+then
+    mysql -h mysql.daws84s.site -uroot -p$MYSQL_ROOT_PASSWORD < /app/db/schema.sql &>>$LOG_FILE
+    mysql -h mysql.daws84s.site -uroot -p$MYSQL_ROOT_PASSWORD < /app/db/app-user.sql  &>>$LOG_FILE
+    mysql -h mysql.daws84s.site -uroot -p$MYSQL_ROOT_PASSWORD < /app/db/master-data.sql &>>$LOG_FILE
+    VALIDATE $? "Loading data into MySQL"
+else
+    echo -e "Data is already loaded into MySQL ... $Y SKIPPING $N"
+fi
+
+systemctl restart shipping &>>$LOG_FILE
+VALIDATE $? "Restart shipping"
+
+END_TIME=$(date +%s)
+TOTAL_TIME=$(( $END_TIME - $START_TIME ))
+
+echo -e "Script exection completed successfully, $Y time taken: $TOTAL_TIME seconds $N" | tee -a $LOG_FILE
