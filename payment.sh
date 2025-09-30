@@ -38,7 +38,7 @@ dnf install python3 gcc python3-devel -y &>>LOG_FILE
 VALIDATE $? "installing python3 development"
 
 id roboshop &>>$LOG_FILE
-IF [ $1 -ne 0 ]
+if [ $1 -ne 0 ]
 then
     useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOG_FILE
     VALIDATE $? "creating system user roboshop"
