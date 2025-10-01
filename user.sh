@@ -38,7 +38,7 @@ dnf module disable nodejs -y &>>$LOG_FILE
 VALIDATE $? "Disabling default nodejs"
 
 dnf module enable nodejs:20 -y &>>$LOG_FILE
-VALIDATE $? "enabling default Redis"
+VALIDATE $? "enabling default nodejs"
 
 dnf install nodejs -y &>>$$LOG_FILE
 VALIDATE $? "Installing nodejs: 20 version"
