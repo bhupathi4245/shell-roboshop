@@ -52,11 +52,11 @@ VALIDATE $? "creating app folder"
 curl -L -o /tmp/payment.zip https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip &>>$LOG_FILE
 VALIDATE $? "downloading payment package"
 
+rm -rf /app/*
 cd /app
 unzip /tmp/payment.zip &>>$LOG_FILE
 VALIDATE $? "unzipping payment pkg"
 
-rm -rf /app/*
 pip3 install -r requirements.txt &>>$LOG_FILE
 VALIDATE $? "install pip3 dependencies"
 
