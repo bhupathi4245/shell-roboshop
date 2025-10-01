@@ -51,7 +51,7 @@ VALIDATE $? "Enabling Redis service"
 systemctl start redis
 VALIDATE $? "Starting Redis service"
 
-END_TIME=$(dat +%s)
+END_TIME=$(date +%s)
 TOTAL_TIME=$(( $END_TIME - $START_TIME)) # Time taken to execute in seconds
 
 echo -e "Script exection completed successfully, $Y time taken: $TOTAL_TIME seconds $N" | tee -a $LOG_FILE
