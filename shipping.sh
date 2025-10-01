@@ -68,8 +68,8 @@ VALIDATE $? "moving and renaming the jar file"
 
 cp $SCRIPT_DIR/shipping.service /etc/systemd/system/shipping.service
 
-systemctl deamon-reload &>>$LOG_FILE
-VALIDATE $? "deamon reload"
+systemctl daemon-reload &>>$LOG_FILE
+VALIDATE $? "daemon reload"
 
 systemctl enable shipping &>>$LOG_FILE
 VALIDATE $? "enabling shipping services"
